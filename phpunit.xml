@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         backupStaticAttributes="false"
+
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+
+         verbose="false"
+>
+    <coverage includeUncoveredFiles="true"
+              processUncoveredFiles="true"
+              ignoreDeprecatedCodeUnits="true"
+              disableCodeCoverageIgnore="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+
+        <exclude>
+            <directory suffix=".php">vendor</directory>
+        </exclude>
+
+        <report>
+            <clover outputFile="tests/target/clover.xml"/>
+            <crap4j outputFile="tests/target/crap4j.xml" threshold="50"/>
+            <html outputDirectory="tests/target/html-coverage" lowUpperBound="50" highLowerBound="90"/>
+            <php outputFile="tests/target/coverage.php"/>
+            <text outputFile="tests/target/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
+            <xml outputDirectory="tests/target/xml-coverage"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile="tests/target/junit.xml"/>
+        <teamcity outputFile="tests/target/teamcity.txt"/>
+        <testdoxHtml outputFile="tests/target/testdox.html"/>
+        <testdoxText outputFile="tests/target/testdox.txt"/>
+        <testdoxXml outputFile="tests/target/testdox.xml"/>
+        <text outputFile="tests/target/logfile.txt"/>
+    </logging>
+
+    <testsuites>
+        <testsuite name="all-tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

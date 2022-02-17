@@ -1,0 +1,44 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+jobs:
+  code-check:
+    name: CodeCheck
+    runs-on: ubuntu-latest
+    container:
+      image: php:8.1.0-fpm-alpine
+      ports:
+        - 80
+      volumes:
+        - ${{ github.workspace }}:/var/www
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up container
+        run: |
+          docker-php-ext-install opcache pcntl && \
+          curl -sfL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer && \
+          chmod +x /usr/bin/composer && \
+          composer self-update
+
+      - name: Run composer install
+        run: |
+          composer install --prefer-dist --quiet --no-progress --no-interaction --ignore-platform-reqs -o
+
+      - name: Run PHPCS Coding Standards
+        run: |
+          echo ""
+          echo "Running PHP CodeSniffer..."
+          ./bin/phpcs -w -p
+
+      - name: Run PHPUnit Tests
+        run: |
+          echo ""
+          echo "Running PHP Unit..."
+          ./bin/phpunit --configuration phpunit.xml
