@@ -13,7 +13,7 @@
 # see https://gitversion.net/docs/ and https://semver.org/
 
 echo "Updating application files"
-git pull origin production
+git pull origin main
 
 echo "Starting the taging process based on commit message +semver: xxxxx"
 
