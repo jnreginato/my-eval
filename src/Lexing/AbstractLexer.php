@@ -85,10 +85,13 @@ class AbstractLexer extends Lexer
 
         $this->add(new TokenDefinition('/\d+/', TokenType::NATURAL_NUMBER));
 
+        $this->add(new TokenDefinition('/\d*(\.\d\d)/', TokenType::STRING));
+
         $this->add(new TokenDefinition('/sqrt/', TokenType::FUNCTION_NAME));
         $this->add(new TokenDefinition('/round/', TokenType::FUNCTION_NAME));
         $this->add(new TokenDefinition('/ceil/', TokenType::FUNCTION_NAME));
         $this->add(new TokenDefinition('/floor/', TokenType::FUNCTION_NAME));
+        $this->add(new TokenDefinition('/ending/', TokenType::FUNCTION_NAME));
 
         $this->add(new TokenDefinition('/sind/', TokenType::FUNCTION_NAME));
         $this->add(new TokenDefinition('/cosd/', TokenType::FUNCTION_NAME));

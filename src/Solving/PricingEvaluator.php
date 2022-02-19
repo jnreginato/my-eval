@@ -66,7 +66,7 @@ use function strlen;
  * $value = $ast->accept($evaluator);
  * ~~~
  */
-class StdMathEvaluator implements Visitor
+class PricingEvaluator implements Visitor
 {
     /**
      * Create an StdMathEvaluator with given variable values.
@@ -119,11 +119,10 @@ class StdMathEvaluator implements Visitor
      * @param BooleanNode $node AST to be evaluated.
      *
      * @return bool
-     * @throws SyntaxErrorException
      */
     public function visitBooleanNode(BooleanNode $node): bool
     {
-        throw new SyntaxErrorException();
+        return $node->value;
     }
 
     /**
@@ -136,12 +135,12 @@ class StdMathEvaluator implements Visitor
      * @return float
      * @throws UnknownVariableException
      */
-    public function visitVariableNode(VariableNode $node): float
+    public function visitVariableNode(VariableNode $node): string
     {
         $name = $node->value;
 
         if (array_key_exists($name, $this->variables)) {
-            return (float)$this->variables[$name];
+            return (string)$this->variables[$name];
         }
 
         throw new UnknownVariableException($name);
@@ -230,16 +229,42 @@ class StdMathEvaluator implements Visitor
     }
 
     /**
-     * Evaluate a TernaryNode.
+     * Evaluate an Logical ExpressionNode.
      *
-     * @param TernaryExpressionNode $node AST to be evaluated.
+     * Computes the value of an ExpressionNode `x op y` where `op` is one of `=`, `>`, `<`, `<>`, `>=`, `<=`,
+     * `&&`, `||`, `AND` or `OR`.
      *
-     * @return float
-     * @throws SyntaxErrorException
+     * @param InfixExpressionNode $node AST to be evaluated.
+     *
+     * @return bool
+     * @throws UnknownOperatorException
+     * @throws NullOperandException
      */
-    public function visitTernaryNode(TernaryExpressionNode $node): float
+    public function visitLogicalExpressionNode(InfixExpressionNode $node): bool
     {
-        throw new SyntaxErrorException();
+        $left     = $node->getLeft();
+        $operator = $node->operator;
+        $right    = $node->getRight();
+
+        if ($left === null || ($right === null)) {
+            throw new NullOperandException();
+        }
+
+        $rightValue = $left->accept($this);
+        $leftValue  = $right->accept($this);
+
+        // Perform the right operation based on the operator
+        return match ($operator) {
+            '='         => $rightValue == $leftValue,
+            '<>'        => $rightValue != $leftValue,
+            '>'         => $rightValue > $leftValue,
+            '<'         => $rightValue < $leftValue,
+            '>='        => $rightValue >= $leftValue,
+            '<='        => $rightValue <= $leftValue,
+            '&&', 'AND' => $rightValue && $leftValue,
+            '||', 'OR'  => $rightValue || $leftValue,
+            default     => throw new UnknownOperatorException($operator),
+        };
     }
 
     /**
@@ -262,7 +287,7 @@ class StdMathEvaluator implements Visitor
 
         $inner = [];
         foreach ($node->operand as $operand) {
-            $inner[] = $operand instanceof StringNode ? $operand->accept($this) : (float)($operand?->accept($this));
+            $inner[] = $operand instanceof StringNode ? $operand->accept($this) : (float)$operand->accept($this);
         }
 
         if (!$inner) {
@@ -270,124 +295,15 @@ class StdMathEvaluator implements Visitor
         }
 
         switch ($node->operator) {
-            // Trigonometric functions
-            case 'sin':
-                return sin($inner[0]);
-
-            case 'cos':
-                return cos($inner[0]);
-
-            case 'tan':
-                return tan($inner[0]);
-
-            case 'cot':
-                $tan_inner = tan($inner[0]);
-                if ($tan_inner === 0.0) {
-                    return NAN;
-                }
-                return 1 / $tan_inner;
-
-            // Trigonometric functions, argument in degrees
-            case 'sind':
-                return sin(deg2rad($inner[0]));
-
-            case 'cosd':
-                return cos(deg2rad($inner[0]));
-
-            case 'tand':
-                return tan(deg2rad($inner[0]));
-
-            case 'cotd':
-                $tan_inner = tan(deg2rad($inner[0]));
-                if ($tan_inner === 0.0) {
-                    return NAN;
-                }
-                return 1 / $tan_inner;
-
-            // Inverse trigonometric functions
-            case 'arcsin':
-                return asin($inner[0]);
-
-            case 'arccos':
-                return acos($inner[0]);
-
-            case 'arctan':
-                return atan($inner[0]);
-
-            case 'arccot':
-                return M_PI / 2 - atan($inner[0]);
-
-            // Exponential and logarithms
-            case 'exp':
-                return exp($inner[0]);
-
-            case 'log':
-            case 'ln':
-                return log($inner[0]);
-
-            case 'lg':
-                return log10($inner[0]);
-
-            // Powers
-            case 'sqrt':
-                return sqrt($inner[0]);
-
-            // Hyperbolic functions
-            case 'sinh':
-                return sinh($inner[0]);
-
-            case 'cosh':
-                return cosh($inner[0]);
-
-            case 'tanh':
-                return tanh($inner[0]);
-
-            case 'coth':
-                $tanh_inner = tanh($inner[0]);
-                if ($tanh_inner === 0.0) {
-                    return NAN;
-                }
-                return 1 / $tanh_inner;
-
-            // Inverse hyperbolic functions
-            case 'arsinh':
-                return asinh($inner[0]);
-
-            case 'arcosh':
-                return acosh($inner[0]);
-
-            case 'artanh':
-                return atanh($inner[0]);
-
-            case 'arcoth':
-                return atanh(1 / $inner[0]);
-
-            case 'abs':
-                return abs($inner[0]);
-
-            case 'sgn':
-                return $inner[0] >= 0 ? 1 : -1;
-
-            case '!':
-                $logGamma = Math::logGamma(1 + $inner[0]);
-
-                return exp($logGamma);
-
-            case '!!':
-                if (round($inner[0]) !== $inner[0]) {
-                    throw new UnexpectedValueException('Expecting positive integer (semi-factorial)');
-                }
-                return Math::semiFactorial((int)$inner[0]);
-
             // Rounding functions
             case 'round':
-                return round($inner[0]);
+                return round((float)$inner[0]);
 
             case 'floor':
-                return floor($inner[0]);
+                return floor((float)$inner[0]);
 
             case 'ceil':
-                return ceil($inner[0]);
+                return ceil((float)$inner[0]);
 
             case 'ending':
                 $ending = (string)$inner[0];
@@ -412,5 +328,65 @@ class StdMathEvaluator implements Visitor
             default:
                 throw new UnknownFunctionException($node->operator);
         }
+    }
+
+    /**
+     * Evaluate an visitTernaryNode.
+     *
+     * Computes the value of an visitTernaryNode `x op y` where `op` is one of `=`, `>`, `<`, `<>`, `<=`or `<=`.
+     *
+     * @param TernaryExpressionNode $node AST to be evaluated.
+     *
+     * @return float
+     * @throws NullOperandException
+     */
+    public function visitTernaryNode(TernaryExpressionNode $node): float
+    {
+        /** @var InfixExpressionNode|BooleanNode $condition */
+        $condition = $node->getCondition();
+
+        $isBooleanNode = $condition instanceof BooleanNode;
+
+        $left  = $isBooleanNode ? $node->getLeft() : $condition->getLeft();
+        $right = $isBooleanNode ? $node->getRight() : $condition->getRight();
+
+        if ($left === null || ($right === null)) {
+            throw new NullOperandException();
+        }
+
+        $leftOperand  = $left->accept($this);
+        $rightOperand = $right->accept($this);
+        $operator     = $isBooleanNode ? $node->operator : $condition->operator;
+
+        if ($isBooleanNode) {
+            return $condition->value ? $leftOperand : $rightOperand;
+        }
+
+        switch ($operator) {
+            default:
+            case '=':
+                $boolValue = $leftOperand == $rightOperand;
+                break;
+            case '>':
+                $boolValue = $leftOperand > $rightOperand;
+                break;
+            case '<':
+                $boolValue = $leftOperand < $rightOperand;
+                break;
+            case '<>':
+                $boolValue = $leftOperand != $rightOperand;
+                break;
+            case '>=':
+                $boolValue = $leftOperand >= $rightOperand;
+                break;
+            case '<=':
+                $boolValue = $leftOperand <= $rightOperand;
+                break;
+        }
+
+        $leftValue  = (float)$node->getLeft()?->accept($this);
+        $rightValue = (float)$node->getRight()?->accept($this);
+
+        return $boolValue ? $leftValue : $rightValue;
     }
 }
