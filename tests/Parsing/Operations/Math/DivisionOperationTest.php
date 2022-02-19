@@ -115,11 +115,11 @@ class DivisionOperationTest extends TestCase
      */
     public function testCanDivideNonNumericNodeOperands(): void
     {
-        $leftOperand  = new FunctionNode('sqrt', 16);
+        $leftOperand  = new FunctionNode('sqrt', [new IntegerNode(16)]);
         $rightOperand = new FloatNode(2.0);
         $division     = $this->divisionOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
-            new InfixExpressionNode('/', new FunctionNode('sqrt', 16), new FloatNode(2.0)),
+            new InfixExpressionNode('/', new FunctionNode('sqrt', [new IntegerNode(16)]), new FloatNode(2.0)),
             $division
         );
     }
@@ -131,8 +131,8 @@ class DivisionOperationTest extends TestCase
      */
     public function testCanDivideEqualNonNumericNodeOperands(): void
     {
-        $leftOperand  = new FunctionNode('sqrt', 16);
-        $rightOperand = new FunctionNode('sqrt', 16);
+        $leftOperand  = new FunctionNode('sqrt', [new IntegerNode(16)]);
+        $rightOperand = new FunctionNode('sqrt', [new IntegerNode(16)]);
         $division     = $this->divisionOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
             new IntegerNode(1),

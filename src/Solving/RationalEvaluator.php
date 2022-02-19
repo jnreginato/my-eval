@@ -16,6 +16,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
@@ -322,7 +323,14 @@ class RationalEvaluator implements Visitor
             throw new NullOperandException();
         }
 
-        $inner = $node->operand->accept($this);
+        $inner = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand->accept($this);
+        }
+
+        if (!$inner) {
+            throw new NullOperandException();
+        }
 
         switch ($node->operator) {
             // Trigonometric functions
@@ -349,27 +357,27 @@ class RationalEvaluator implements Visitor
                 throw new UnexpectedValueException(self::DEFAULT_ERROR_MESSAGE);
 
             case 'abs':
-                return new RationalNode(abs($inner->getNumerator()), $inner->getDenominator());
+                return new RationalNode(abs($inner[0]->getNumerator()), $inner[0]->getDenominator());
 
             case 'sgn':
-                if ($inner->getNumerator() >= 0) {
+                if ($inner[0]->getNumerator() >= 0) {
                     return new RationalNode(1, 0);
                 }
                 return new RationalNode(-1, 0);
 
             // Powers
             case 'sqrt':
-                return $this->rpow($inner, new RationalNode(1, 2));
+                return $this->rpow($inner[0], new RationalNode(1, 2));
 
             case '!':
-                if ($inner->getDenominator() === 1 && $inner->getNumerator() >= 0) {
-                    return new RationalNode(Math::factorial($inner->getNumerator()), 1);
+                if ($inner[0]->getDenominator() === 1 && $inner[0]->getNumerator() >= 0) {
+                    return new RationalNode(Math::factorial($inner[0]->getNumerator()), 1);
                 }
                 throw new UnexpectedValueException('Expecting positive integer (factorial)');
 
             case '!!':
-                if ($inner->getDenominator() === 1 && $inner->getNumerator() >= 0) {
-                    return new RationalNode(Math::semiFactorial($inner->getNumerator()), 1);
+                if ($inner[0]->getDenominator() === 1 && $inner[0]->getNumerator() >= 0) {
+                    return new RationalNode(Math::semiFactorial($inner[0]->getNumerator()), 1);
                 }
                 throw new UnexpectedValueException('Expecting positive integer (factorial)');
 

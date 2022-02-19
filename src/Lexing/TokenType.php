@@ -32,6 +32,9 @@ final class TokenType
     /** Token represented a known constant, e.g. 'pi' */
     public const CONSTANT = 7;
 
+    /** Token represented a known string, e.g. 'test' */
+    public const STRING = 8;
+
     // Prefix Operators (Unary expressions)
 
     /** Token representing a unary minus. Not used. This is the responsibility of the Parser */

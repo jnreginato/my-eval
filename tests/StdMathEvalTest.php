@@ -29,7 +29,7 @@ class StdMathEvalTest extends TestCase
     private function assertNodesEqual($node1, $node2): void
     {
         $printer = new TreePrinter();
-        $message = 'Node1: ' . $node1->accept($printer) . "\nNode 2: " . $node2->accept($printer) . "\n";
+        $message = 'Node 1: ' . $node1->accept($printer) . "\nNode 2: " . $node2->accept($printer) . "\n";
 
         static::assertTrue($node1->compareTo($node2), $message);
     }

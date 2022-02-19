@@ -20,6 +20,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\AbstractExpressionNode;
 use MyEval\Parsing\Nodes\Operator\AbstractOperatorNode;
@@ -236,6 +237,7 @@ class Parser
             case BooleanNode::class:
             case VariableNode::class:
             case ConstantNode::class:
+            case StringNode::class:
                 $this->handleOperand($node);
                 break;
 
@@ -357,7 +359,7 @@ class Parser
         if ($operand === null) {
             throw new SyntaxErrorException();
         }
-        $this->operandStack->push(new FunctionNode($node->operator, $operand));
+        $this->operandStack->push(new FunctionNode($node->operator, [$operand]));
     }
 
     /**
@@ -417,7 +419,7 @@ class Parser
 
         // Pop operators off the operatorStack until its empty, or we find an opening parenthesis, building
         // subexpressions on the operandStack as we go.
-        /** @var InfixExpressionNode|TernaryExpressionNode $popped */
+        /** @var InfixExpressionNode|TernaryExpressionNode|OpenParenthesisNode $popped */
         while ($popped = $this->operatorStack->pop()) {
             // ok, we have our matching opening parenthesis
             if ($popped instanceof OpenParenthesisNode) {
@@ -439,9 +441,12 @@ class Parser
         $previous = $this->operatorStack->peek();
         if ($previous instanceof FunctionNode) {
             /** @var FunctionNode $node */
-            $node    = $this->operatorStack->pop();
-            $operand = $this->operandStack->pop();
-            $node->setOperand($operand);
+            $node = $this->operatorStack->pop();
+            for ($n = 0; $n < $node->getParamsNumber(); $n++) {
+                $operand = $this->operandStack->pop();
+                $node->addOperand($operand);
+            }
+
             $this->operandStack->push($node);
         }
     }

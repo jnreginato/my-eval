@@ -18,6 +18,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
@@ -25,6 +26,7 @@ use MyEval\Parsing\Nodes\Operator\TernaryExpressionNode;
 use UnexpectedValueException;
 
 use function array_key_exists;
+use function strlen;
 
 /**
  * Evaluate a parsed mathematical expression.
@@ -250,6 +252,7 @@ class StdMathEvaluator implements Visitor
      * @return float|int
      * @throws UnknownFunctionException
      * @throws NullOperandException
+     * @throws SyntaxErrorException
      */
     public function visitFunctionNode(FunctionNode $node): float|int
     {
@@ -257,21 +260,28 @@ class StdMathEvaluator implements Visitor
             throw new NullOperandException();
         }
 
-        $inner = (float)$node->operand->accept($this);
+        $inner = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand instanceof StringNode ? $operand->accept($this) : (float)($operand?->accept($this));
+        }
+
+        if (!$inner) {
+            throw new NullOperandException();
+        }
 
         switch ($node->operator) {
             // Trigonometric functions
             case 'sin':
-                return sin($inner);
+                return sin($inner[0]);
 
             case 'cos':
-                return cos($inner);
+                return cos($inner[0]);
 
             case 'tan':
-                return tan($inner);
+                return tan($inner[0]);
 
             case 'cot':
-                $tan_inner = tan($inner);
+                $tan_inner = tan($inner[0]);
                 if ($tan_inner === 0.0) {
                     return NAN;
                 }
@@ -279,16 +289,16 @@ class StdMathEvaluator implements Visitor
 
             // Trigonometric functions, argument in degrees
             case 'sind':
-                return sin(deg2rad($inner));
+                return sin(deg2rad($inner[0]));
 
             case 'cosd':
-                return cos(deg2rad($inner));
+                return cos(deg2rad($inner[0]));
 
             case 'tand':
-                return tan(deg2rad($inner));
+                return tan(deg2rad($inner[0]));
 
             case 'cotd':
-                $tan_inner = tan(deg2rad($inner));
+                $tan_inner = tan(deg2rad($inner[0]));
                 if ($tan_inner === 0.0) {
                     return NAN;
                 }
@@ -296,44 +306,44 @@ class StdMathEvaluator implements Visitor
 
             // Inverse trigonometric functions
             case 'arcsin':
-                return asin($inner);
+                return asin($inner[0]);
 
             case 'arccos':
-                return acos($inner);
+                return acos($inner[0]);
 
             case 'arctan':
-                return atan($inner);
+                return atan($inner[0]);
 
             case 'arccot':
-                return M_PI / 2 - atan($inner);
+                return M_PI / 2 - atan($inner[0]);
 
             // Exponential and logarithms
             case 'exp':
-                return exp($inner);
+                return exp($inner[0]);
 
             case 'log':
             case 'ln':
-                return log($inner);
+                return log($inner[0]);
 
             case 'lg':
-                return log10($inner);
+                return log10($inner[0]);
 
             // Powers
             case 'sqrt':
-                return sqrt($inner);
+                return sqrt($inner[0]);
 
             // Hyperbolic functions
             case 'sinh':
-                return sinh($inner);
+                return sinh($inner[0]);
 
             case 'cosh':
-                return cosh($inner);
+                return cosh($inner[0]);
 
             case 'tanh':
-                return tanh($inner);
+                return tanh($inner[0]);
 
             case 'coth':
-                $tanh_inner = tanh($inner);
+                $tanh_inner = tanh($inner[0]);
                 if ($tanh_inner === 0.0) {
                     return NAN;
                 }
@@ -341,43 +351,43 @@ class StdMathEvaluator implements Visitor
 
             // Inverse hyperbolic functions
             case 'arsinh':
-                return asinh($inner);
+                return asinh($inner[0]);
 
             case 'arcosh':
-                return acosh($inner);
+                return acosh($inner[0]);
 
             case 'artanh':
-                return atanh($inner);
+                return atanh($inner[0]);
 
             case 'arcoth':
-                return atanh(1 / $inner);
+                return atanh(1 / $inner[0]);
 
             case 'abs':
-                return abs($inner);
+                return abs($inner[0]);
 
             case 'sgn':
-                return $inner >= 0 ? 1 : -1;
+                return $inner[0] >= 0 ? 1 : -1;
 
             case '!':
-                $logGamma = Math::logGamma(1 + $inner);
+                $logGamma = Math::logGamma(1 + $inner[0]);
 
                 return exp($logGamma);
 
             case '!!':
-                if (round($inner) !== $inner) {
+                if (round($inner[0]) !== $inner[0]) {
                     throw new UnexpectedValueException('Expecting positive integer (semi-factorial)');
                 }
-                return Math::semiFactorial((int)$inner);
+                return Math::semiFactorial((int)$inner[0]);
 
             // Rounding functions
             case 'round':
-                return round($inner);
+                return round($inner[0]);
 
             case 'floor':
-                return floor($inner);
+                return floor($inner[0]);
 
             case 'ceil':
-                return ceil($inner);
+                return ceil($inner[0]);
 
             default:
                 throw new UnknownFunctionException($node->operator);

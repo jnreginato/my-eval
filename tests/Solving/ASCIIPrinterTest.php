@@ -5,7 +5,15 @@ declare(strict_types=1);
 namespace MyEval\Solving;
 
 use MyEval\ComplexMathEval;
+use MyEval\Exceptions\DelimeterMismatchException;
+use MyEval\Exceptions\DivisionByZeroException;
+use MyEval\Exceptions\ExponentialException;
+use MyEval\Exceptions\NullOperandException;
+use MyEval\Exceptions\SyntaxErrorException;
+use MyEval\Exceptions\UnexpectedOperatorException;
 use MyEval\Exceptions\UnknownConstantException;
+use MyEval\Exceptions\UnknownOperatorException;
+use MyEval\Exceptions\UnknownTokenException;
 use MyEval\LogicEval;
 use MyEval\Parsing\Nodes\Operand\BooleanNode;
 use MyEval\Parsing\Nodes\Operand\ConstantNode;
@@ -37,6 +45,14 @@ class ASCIIPrinterTest extends TestCase
      * @param $output
      *
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     private function assertResult($input, $output): void
     {
@@ -48,6 +64,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintNumber(): void
     {
@@ -64,6 +88,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintVariable(): void
     {
@@ -72,6 +104,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintConstant(): void
     {
@@ -101,6 +141,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintAdditionAndSubtraction(): void
     {
@@ -122,6 +170,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintUnaryMinus(): void
     {
@@ -135,6 +191,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintMultiplication(): void
     {
@@ -145,6 +209,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintDivision(): void
     {
@@ -156,6 +228,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintMultiplicationAndDivision(): void
     {
@@ -170,6 +250,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintExponentiation(): void
     {
@@ -190,6 +278,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintLogicalOperators(): void
     {
@@ -228,6 +324,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintFunctions(): void
     {
@@ -251,6 +355,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintFactorials(): void
     {
@@ -265,6 +377,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintSemiFactorials(): void
     {
@@ -278,6 +398,14 @@ class ASCIIPrinterTest extends TestCase
 
     /**
      * @return void
+     * @throws DelimeterMismatchException
+     * @throws DivisionByZeroException
+     * @throws ExponentialException
+     * @throws NullOperandException
+     * @throws SyntaxErrorException
+     * @throws UnexpectedOperatorException
+     * @throws UnknownOperatorException
+     * @throws UnknownTokenException
      */
     public function testCanPrintIfOperator(): void
     {

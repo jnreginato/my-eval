@@ -102,11 +102,11 @@ class AdditionOperationTest extends TestCase
      */
     public function testCanAddNonNumericNodeOperands(): void
     {
-        $leftOperand  = new FunctionNode('sqrt', 16);
+        $leftOperand  = new FunctionNode('sqrt', [new IntegerNode(16)]);
         $rightOperand = new FloatNode(2.0);
         $addition     = $this->additionOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
-            new InfixExpressionNode('+', new FunctionNode('sqrt', 16), new FloatNode(2.0)),
+            new InfixExpressionNode('+', new FunctionNode('sqrt', [new IntegerNode(16)]), new FloatNode(2.0)),
             $addition
         );
     }

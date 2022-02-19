@@ -278,23 +278,25 @@ class LaTeXPrinter implements Visitor
     {
         $functionName = $node->operator;
 
-        $operand = $node->operand->accept($this);
+        $operand = [];
+        foreach ($node->operand as $inner) {
+            $operand[] = $inner;
+        }
 
         switch ($functionName) {
             case 'sqrt':
-                return "\\$functionName{" . $node->operand->accept($this) . '}';
+                return "\\$functionName{" . $operand[0]->accept($this) . '}';
             case 'exp':
-                $operand = $node->operand;
-                if ($operand->complexity() < 10) {
+                if ($operand[0]->complexity() < 10) {
                     $this->solidus = true;
-                    $result        = 'e^' . $this->bracesNeeded($operand);
+                    $result        = 'e^' . $this->bracesNeeded($operand[0]);
                     $this->solidus = false;
 
                     return $result;
                 }
                 // Operand is complex, typset using \exp instead
 
-                return '\exp(' . $operand->accept($this) . ')';
+                return '\exp(' . $operand[0]->accept($this) . ')';
 
             case 'ln':
             case 'log':
@@ -307,9 +309,7 @@ class LaTeXPrinter implements Visitor
                 break;
 
             case 'abs':
-                $operand = $node->operand;
-
-                return '\lvert ' . $operand->accept($this) . '\rvert ';
+                return '\lvert ' . $operand[0]->accept($this) . '\rvert ';
 
             case '!':
             case '!!':
@@ -319,7 +319,13 @@ class LaTeXPrinter implements Visitor
                 $functionName = 'operatorname{' . $functionName . '}';
         }
 
-        return "\\$functionName($operand)";
+        $inner = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand->accept($this);
+        }
+        $params = implode(', ', $inner);
+
+        return "\\$functionName($params)";
     }
 
     /**
@@ -357,7 +363,7 @@ class LaTeXPrinter implements Visitor
     private function visitFactorialNode(FunctionNode $node): string
     {
         $functionName = $node->operator;
-        $op           = $node->operand;
+        $op           = $node->operand[0];
         $operand      = $op->accept($this);
 
         // Add parentheses most of the time.

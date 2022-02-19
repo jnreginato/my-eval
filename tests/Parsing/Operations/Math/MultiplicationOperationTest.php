@@ -128,11 +128,11 @@ class MultiplicationOperationTest extends TestCase
      */
     public function testCanMultiplyNonNumericNodeOperands(): void
     {
-        $leftOperand    = new FunctionNode('sqrt', 16);
+        $leftOperand    = new FunctionNode('sqrt', [16]);
         $rightOperand   = new FloatNode(2.0);
         $multiplication = $this->multiplicationOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
-            new InfixExpressionNode('*', new FunctionNode('sqrt', 16), new FloatNode(2.0)),
+            new InfixExpressionNode('*', new FunctionNode('sqrt', [16]), new FloatNode(2.0)),
             $multiplication
         );
     }

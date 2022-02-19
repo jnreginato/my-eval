@@ -10,6 +10,7 @@ use MyEval\Lexing\Token;
 use MyEval\Lexing\TokenType;
 use MyEval\Parsing\Nodes\Node;
 use MyEval\Parsing\Nodes\Operand\ConstantNode;
+use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Solving\ASCIIPrinter;
 use MyEval\Solving\ComplexEvaluator;
@@ -44,12 +45,12 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanEvaluate(): void
     {
-        static::assertSame(1.0, (new FunctionNode('sin', M_PI / 2))->evaluate());
-        static::assertSame(0.5, (new FunctionNode('cos', M_PI / 3))->evaluate());
-        static::assertSame(5.0, (new FunctionNode('sqrt', 25))->evaluate());
-        static::assertSame(log(100), (new FunctionNode('log', 100))->evaluate());
-        static::assertSame(exp(M_PI), (new FunctionNode('exp', new ConstantNode('pi')))->evaluate());
-        static::assertSame(3.0, (new FunctionNode('ceil', 2.3))->evaluate());
+        static::assertSame(1.0, (new FunctionNode('sin', [new FloatNode(M_PI / 2)]))->evaluate());
+        static::assertSame(0.5, (new FunctionNode('cos', [new FloatNode(M_PI / 3)]))->evaluate());
+        static::assertSame(5.0, (new FunctionNode('sqrt', [new IntegerNode(25)]))->evaluate());
+        static::assertSame(log(100), (new FunctionNode('log', [new IntegerNode(100)]))->evaluate());
+        static::assertSame(exp(M_PI), (new FunctionNode('exp', [new ConstantNode('pi')]))->evaluate());
+        static::assertSame(3.0, (new FunctionNode('ceil', [new FloatNode(2.3)]))->evaluate());
     }
 
     /**
@@ -57,7 +58,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanAcceptStdMathEvaluatorVisitor(): void
     {
-        static::assertSame(1.0, (new FunctionNode('sin', M_PI / 2))->accept(new StdMathEvaluator()));
+        static::assertSame(1.0, (new FunctionNode('sin', [new FloatNode(M_PI / 2)]))->accept(new StdMathEvaluator()));
     }
 
     /**
@@ -66,7 +67,7 @@ class FunctionNodeTest extends TestCase
     public function testCanAcceptRationalEvaluatorVisitor(): float
     {
         $this->expectException(UnexpectedValueException::class);
-        return (new FunctionNode('sin', M_PI / 2))->accept(new RationalEvaluator());
+        return (new FunctionNode('sin', [new FloatNode(M_PI / 2)]))->accept(new RationalEvaluator());
     }
 
     /**
@@ -76,7 +77,7 @@ class FunctionNodeTest extends TestCase
     {
         static::assertEquals(
             new Complex(1, 0),
-            (new FunctionNode('sin', M_PI / 2))->accept(new ComplexEvaluator())
+            (new FunctionNode('sin', [new FloatNode(M_PI / 2)]))->accept(new ComplexEvaluator())
         );
     }
 
@@ -87,7 +88,7 @@ class FunctionNodeTest extends TestCase
     {
         static::assertEquals(
             new IntegerNode(0),
-            (new FunctionNode('sqrt', 25))->accept(new Differentiator('x'))
+            (new FunctionNode('sqrt', [new IntegerNode(25)]))->accept(new Differentiator('x'))
         );
     }
 
@@ -96,7 +97,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanAcceptLogicEvaluatorVisitor(): void
     {
-        static::assertSame(1.0, (new FunctionNode('sin', M_PI / 2))->accept(new LogicEvaluator()));
+        static::assertSame(1.0, (new FunctionNode('sin', [new FloatNode(M_PI / 2)]))->accept(new LogicEvaluator()));
     }
 
     /**
@@ -104,7 +105,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanAcceptASCIIPrinterVisitor(): void
     {
-        static::assertSame('log(100)', (new FunctionNode('log', 100))->accept(new ASCIIPrinter()));
+        static::assertSame('log(100)', (new FunctionNode('log', [new IntegerNode(100)]))->accept(new ASCIIPrinter()));
     }
 
     /**
@@ -112,7 +113,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanAcceptLaTeXPrinterVisitor(): void
     {
-        static::assertSame('\log(100)', (new FunctionNode('log', 100))->accept(new LaTeXPrinter()));
+        static::assertSame('\log(100)', (new FunctionNode('log', [new IntegerNode(100)]))->accept(new LaTeXPrinter()));
     }
 
     /**
@@ -120,7 +121,10 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanAcceptTreePrinterVisitor(): void
     {
-        static::assertSame('log(100:float)', (new FunctionNode('log', 100))->accept(new TreePrinter()));
+        static::assertSame(
+            'log(100:int)',
+            (new FunctionNode('log', [new IntegerNode(100)]))->accept(new TreePrinter())
+        );
     }
 
     /**
@@ -128,8 +132,8 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanCompareTwoEqualNodes(): void
     {
-        $node  = new FunctionNode('sin', M_PI / 6);
-        $other = new FunctionNode('sin', M_PI / 6);
+        $node  = new FunctionNode('sin', [new FloatNode(M_PI / 6)]);
+        $other = new FunctionNode('sin', [new FloatNode(M_PI / 6)]);
 
         static::assertTrue($node->compareTo($other));
     }
@@ -139,11 +143,11 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanCompareTwoDifferentNodes(): void
     {
-        $node  = new FunctionNode('sin', M_PI / 6);
-        $other = new FunctionNode('cos', M_PI / 6);
+        $node  = new FunctionNode('sin', [new FloatNode(M_PI / 6)]);
+        $other = new FunctionNode('cos', [new FloatNode(M_PI / 6)]);
         static::assertFalse($node->compareTo($other));
 
-        $node  = new FunctionNode('sin', M_PI / 6);
+        $node  = new FunctionNode('sin', [new FloatNode(M_PI / 6)]);
         $other = new IntegerNode(1);
         static::assertFalse($node->compareTo($other));
     }
@@ -153,7 +157,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanComputeComplexityOfTheAst(): void
     {
-        static::assertEquals(7, (new FunctionNode('sin', M_PI / 6))->complexity());
+        static::assertEquals(7, (new FunctionNode('sin', [new FloatNode(M_PI / 6)]))->complexity());
     }
 
     /**
@@ -161,7 +165,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanTransformToString(): void
     {
-        static::assertEquals('sin(3.1415926535898)', (string)new FunctionNode('sin', M_PI));
+        static::assertEquals('sin(3.1415926535898)', (string)new FunctionNode('sin', [new FloatNode(M_PI)]));
     }
 
     /**
@@ -169,7 +173,7 @@ class FunctionNodeTest extends TestCase
      */
     public function testCanSetOperand(): void
     {
-        $node = new FunctionNode('sqrt', 16);
+        $node = new FunctionNode('sqrt', [new IntegerNode(16)]);
         static::assertEquals(4, $node->accept(new StdMathEvaluator()));
 
         $node->setOperand(25);

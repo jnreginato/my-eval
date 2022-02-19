@@ -17,6 +17,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
@@ -255,91 +256,98 @@ class ComplexEvaluator implements Visitor
             throw new NullOperandException();
         }
 
-        $z = $node->operand->accept($this);
+        $z = [];
+        foreach ($node->operand as $operand) {
+            $z[] = $operand->accept($this);
+        }
+
+        if (!$z) {
+            throw new NullOperandException();
+        }
 
         switch ($node->operator) {
             // Trigonometric functions
             case 'sin':
-                return Complex::sin($z);
+                return Complex::sin($z[0]);
 
             case 'cos':
-                return Complex::cos($z);
+                return Complex::cos($z[0]);
 
             case 'tan':
-                return Complex::tan($z);
+                return Complex::tan($z[0]);
 
             case 'cot':
-                return Complex::cot($z);
+                return Complex::cot($z[0]);
 
             // Inverse trigonometric functions
             case 'arcsin':
-                return Complex::arcsin($z);
+                return Complex::arcsin($z[0]);
 
             case 'arccos':
-                return Complex::arccos($z);
+                return Complex::arccos($z[0]);
 
             case 'arctan':
-                return Complex::arctan($z);
+                return Complex::arctan($z[0]);
 
             case 'arccot':
-                return Complex::arccot($z);
+                return Complex::arccot($z[0]);
 
             case 'sinh':
-                return Complex::sinh($z);
+                return Complex::sinh($z[0]);
 
             case 'cosh':
-                return Complex::cosh($z);
+                return Complex::cosh($z[0]);
 
             case 'tanh':
-                return Complex::tanh($z);
+                return Complex::tanh($z[0]);
 
             case 'coth':
-                return Complex::div(1, Complex::tanh($z));
+                return Complex::div(1, Complex::tanh($z[0]));
 
             case 'arsinh':
-                return Complex::arsinh($z);
+                return Complex::arsinh($z[0]);
 
             case 'arcosh':
-                return Complex::arcosh($z);
+                return Complex::arcosh($z[0]);
 
             case 'artanh':
-                return Complex::artanh($z);
+                return Complex::artanh($z[0]);
 
             case 'arcoth':
-                return Complex::div(1, Complex::artanh($z));
+                return Complex::div(1, Complex::artanh($z[0]));
 
             case 'exp':
-                return Complex::exp($z);
+                return Complex::exp($z[0]);
 
             case 'ln':
-                if ($z->imaginary !== 0.0 || $z->real <= 0) {
+                if ($z[0]->imaginary !== 0.0 || $z[0]->real <= 0) {
                     throw new UnexpectedValueException('Expecting positive real number (ln)');
                 }
-                return Complex::log($z);
+                return Complex::log($z[0]);
 
             case 'log':
-                return Complex::log($z);
+                return Complex::log($z[0]);
 
             case 'lg':
-                return Complex::div(Complex::log($z), M_LN10);
+                return Complex::div(Complex::log($z[0]), M_LN10);
 
             case 'sqrt':
-                return Complex::sqrt($z);
+                return Complex::sqrt($z[0]);
 
             case 'abs':
-                return new Complex($z->abs(), 0);
+                return new Complex($z[0]->abs(), 0);
 
             case 'arg':
-                return new Complex($z->arg(), 0);
+                return new Complex($z[0]->arg(), 0);
 
             case 're':
-                return new Complex($z->real, 0);
+                return new Complex($z[0]->real, 0);
 
             case 'im':
-                return new Complex($z->imaginary, 0);
+                return new Complex($z[0]->imaginary, 0);
 
             case 'conj':
-                return new Complex($z->real, -$z->imaginary);
+                return new Complex($z[0]->real, -$z[0]->imaginary);
 
             default:
                 throw new UnknownFunctionException($node->operator);

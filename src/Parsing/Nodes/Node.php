@@ -12,6 +12,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\CloseBraceNode;
 use MyEval\Parsing\Nodes\Operator\CloseParenthesisNode;
@@ -31,9 +32,9 @@ use MyEval\Solving\StdMathEvaluator;
  */
 abstract class Node implements Visitable
 {
-    public const NUMERIC_INTEGER   = 1;
-    public const NUMERIC_RATIONAL  = 2;
-    public const NUMERIC_FLOAT     = 3;
+    public const NUMERIC_INTEGER  = 1;
+    public const NUMERIC_RATIONAL = 2;
+    public const NUMERIC_FLOAT    = 3;
 
     /**
      * Node factory, creating an appropriate Node from a Token.
@@ -53,6 +54,7 @@ abstract class Node implements Visitable
             TokenType::BOOLEAN                 => new BooleanNode($token->value),
             TokenType::VARIABLE                => new VariableNode($token->value),
             TokenType::CONSTANT                => new ConstantNode($token->value),
+            TokenType::STRING                  => new StringNode($token->value),
 
             // Operators
             TokenType::ADDITION_OPERATOR,
@@ -140,6 +142,10 @@ abstract class Node implements Visitable
     public function complexity(): int
     {
         switch (\get_class($this)) {
+            default:
+                // This shouldn't happen under normal circumstances.
+                $complexity = 1000;
+                break;
             case IntegerNode::class:
             case VariableNode::class:
             case ConstantNode::class:
@@ -151,7 +157,7 @@ abstract class Node implements Visitable
                 break;
             case FunctionNode::class:
                 /** @var FunctionNode $this */
-                $complexity = 5 + $this->operand->complexity();
+                $complexity = 5 + $this->operand[0]->complexity();
                 break;
             case InfixExpressionNode::class:
                 /** @var InfixExpressionNode $this */
@@ -163,10 +169,6 @@ abstract class Node implements Visitable
                     '/'           => 3 + $left?->complexity() + (($right === null) ? 0 : $right->complexity()),
                     '^'           => 8 + $left?->complexity() + (($right === null) ? 0 : $right->complexity()),
                 };
-                default:
-                    // This shouldn't happen under normal circumstances.
-                    $complexity = 1000;
-                    break;
         }
 
         return $complexity;

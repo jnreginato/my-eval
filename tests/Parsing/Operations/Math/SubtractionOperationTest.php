@@ -126,11 +126,11 @@ class SubtractionOperationTest extends TestCase
      */
     public function testCanSubtractNonNumericNodeOperands(): void
     {
-        $leftOperand  = new FunctionNode('sqrt', 16);
+        $leftOperand  = new FunctionNode('sqrt', [new IntegerNode(16)]);
         $rightOperand = new FloatNode(2.0);
         $subtraction  = $this->subtractionOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
-            new InfixExpressionNode('-', new FunctionNode('sqrt', 16), new FloatNode(2.0)),
+            new InfixExpressionNode('-', new FunctionNode('sqrt', [new IntegerNode(16)]), new FloatNode(2.0)),
             $subtraction
         );
     }
@@ -142,8 +142,8 @@ class SubtractionOperationTest extends TestCase
      */
     public function testCanSubtractEqualNonNumericNodeOperands(): void
     {
-        $leftOperand  = new FunctionNode('sqrt', 16);
-        $rightOperand = new FunctionNode('sqrt', 16);
+        $leftOperand  = new FunctionNode('sqrt', [new IntegerNode(16)]);
+        $rightOperand = new FunctionNode('sqrt', [new IntegerNode(16)]);
         $subtraction  = $this->subtractionOperation->makeNode($leftOperand, $rightOperand);
         static::assertEquals(
             new IntegerNode(0),

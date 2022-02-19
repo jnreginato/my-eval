@@ -16,6 +16,7 @@ use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
@@ -265,7 +266,7 @@ class Differentiator implements Visitor
                     return $this->nodeFactory->multiplication($right->accept($this), $node);
                 }
 
-                $term1   = $this->nodeFactory->multiplication($right->accept($this), new FunctionNode('ln', $base));
+                $term1   = $this->nodeFactory->multiplication($right->accept($this), new FunctionNode('ln', [$base]));
                 $term2   = $this->nodeFactory->division(
                     $this->nodeFactory->multiplication($exponent, $base->accept($this)),
                     $base
@@ -334,8 +335,16 @@ class Differentiator implements Visitor
             throw new NullOperandException();
         }
 
-        $inner = $node->operand->accept($this);
-        $arg   = $node->operand;
+        $inner = [];
+        $arg = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand->accept($this);
+            $arg[] = $operand;
+        }
+
+        if (!$inner) {
+            throw new NullOperandException();
+        }
 
         switch ($node->operator) {
             case 'sin':
@@ -359,26 +368,26 @@ class Differentiator implements Visitor
                 break;
 
             case 'arcsin':
-                $exp   = $this->nodeFactory->exponentiation($arg, new IntegerNode(2));
-                $denom = new FunctionNode('sqrt', $this->nodeFactory->subtraction(new IntegerNode(1), $exp));
-                return $this->nodeFactory->division($inner, $denom);
+                $exp   = $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2));
+                $denom = new FunctionNode('sqrt', [$this->nodeFactory->subtraction(new IntegerNode(1), $exp)]);
+                return $this->nodeFactory->division($inner[0], $denom);
 
             case 'arccos':
-                $exp   = $this->nodeFactory->exponentiation($arg, new IntegerNode(2));
-                $denom = new FunctionNode('sqrt', $this->nodeFactory->subtraction(new IntegerNode(1), $exp));
-                return $this->nodeFactory->division($this->nodeFactory->unaryMinus($inner), $denom);
+                $exp   = $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2));
+                $denom = new FunctionNode('sqrt', [$this->nodeFactory->subtraction(new IntegerNode(1), $exp)]);
+                return $this->nodeFactory->division($this->nodeFactory->unaryMinus($inner[0]), $denom);
 
             case 'arctan':
                 $denom = $this->nodeFactory->addition(
                     new IntegerNode(1),
-                    $this->nodeFactory->exponentiation($arg, new IntegerNode(2))
+                    $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2))
                 );
-                return $this->nodeFactory->division($inner, $denom);
+                return $this->nodeFactory->division($inner[0], $denom);
 
             case 'arccot':
                 $denom = $this->nodeFactory->addition(
                     new IntegerNode(1),
-                    $this->nodeFactory->exponentiation($arg, new IntegerNode(2))
+                    $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2))
                 );
                 $df    = $this->nodeFactory->unaryMinus($this->nodeFactory->division(new IntegerNode(1), $denom));
                 break;
@@ -389,15 +398,18 @@ class Differentiator implements Visitor
 
             case 'ln':
             case 'log':
-                return $this->nodeFactory->division($inner, $arg);
+                return $this->nodeFactory->division($inner[0], $arg[0]);
 
             case 'lg':
-                $denominator = $this->nodeFactory->multiplication(new FunctionNode('ln', new IntegerNode(10)), $arg);
-                return $this->nodeFactory->division($inner, $denominator);
+                $denominator = $this->nodeFactory->multiplication(
+                    new FunctionNode('ln', [new IntegerNode(10)]),
+                    $arg[0]
+                );
+                return $this->nodeFactory->division($inner[0], $denominator);
 
             case 'sqrt':
                 $denom = $this->nodeFactory->multiplication(new IntegerNode(2), $node);
-                return $this->nodeFactory->division($inner, $denom);
+                return $this->nodeFactory->division($inner[0], $denom);
 
             case 'sinh':
                 $df = new FunctionNode('cosh', $arg);
@@ -418,20 +430,20 @@ class Differentiator implements Visitor
                 break;
 
             case 'arsinh':
-                $exp  = $this->nodeFactory->exponentiation($arg, new IntegerNode(2));
+                $exp  = $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2));
                 $temp = $this->nodeFactory->addition($exp, new IntegerNode(1));
-                return $this->nodeFactory->division($inner, new FunctionNode('sqrt', $temp));
+                return $this->nodeFactory->division($inner[0], new FunctionNode('sqrt', [$temp]));
 
             case 'arcosh':
-                $exp  = $this->nodeFactory->exponentiation($arg, new IntegerNode(2));
+                $exp  = $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2));
                 $temp = $this->nodeFactory->subtraction($exp, new IntegerNode(1));
-                return $this->nodeFactory->division($inner, new FunctionNode('sqrt', $temp));
+                return $this->nodeFactory->division($inner[0], new FunctionNode('sqrt', [$temp]));
 
             case 'artanh':
             case 'arcoth':
-                $exp         = $this->nodeFactory->exponentiation($arg, new IntegerNode(2));
+                $exp         = $this->nodeFactory->exponentiation($arg[0], new IntegerNode(2));
                 $denominator = $this->nodeFactory->subtraction(new IntegerNode(1), $exp);
-                return $this->nodeFactory->division($inner, $denominator);
+                return $this->nodeFactory->division($inner[0], $denominator);
 
             case 'abs':
                 $df = new FunctionNode('sgn', $arg);
@@ -441,6 +453,6 @@ class Differentiator implements Visitor
                 throw new UnknownFunctionException($node->operator);
         }
 
-        return $this->nodeFactory->multiplication($inner, $df);
+        return $this->nodeFactory->multiplication($inner[0], $df);
     }
 }

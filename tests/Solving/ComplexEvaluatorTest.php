@@ -246,7 +246,7 @@ class ComplexEvaluatorTest extends TestCase
     public function testEmitExceptionIfFunctionNullOperand(): void
     {
         $complexEvaluator = new ComplexEvaluator();
-        $node             = new FunctionNode('sin', null);
+        $node             = new FunctionNode('sin');
         $this->expectException(NullOperandException::class);
         $complexEvaluator->visitFunctionNode($node);
     }
@@ -506,7 +506,7 @@ class ComplexEvaluatorTest extends TestCase
      */
     public function testCannotEvalauateUnknownFunction(): void
     {
-        $f = new FunctionNode('sdf', new FloatNode(1));
+        $f = new FunctionNode('sdf', [new FloatNode(1)]);
 
         $this->expectException(UnknownFunctionException::class);
         $this->evaluate($f);

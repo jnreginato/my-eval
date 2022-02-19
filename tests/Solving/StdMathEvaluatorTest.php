@@ -429,7 +429,7 @@ class StdMathEvaluatorTest extends TestCase
      */
     public function testCannotEvalauateUnknownFunction()
     {
-        $f = new FunctionNode('sdf', new FloatNode(1));
+        $f = new FunctionNode('sdf', [new FloatNode(1)]);
 
         $this->expectException(UnknownFunctionException::class);
         $this->evaluate($f);

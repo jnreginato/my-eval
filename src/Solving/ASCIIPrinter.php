@@ -11,7 +11,9 @@ use MyEval\Parsing\Nodes\Operand\BooleanNode;
 use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\IntegerNode;
+use MyEval\Parsing\Nodes\Operand\NumericNode;
 use MyEval\Parsing\Nodes\Operand\RationalNode;
+use MyEval\Parsing\Nodes\Operand\StringNode;
 use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
@@ -261,9 +263,14 @@ class ASCIIPrinter implements Visitor, LogicVisitor
         if ($node->operand === null) {
             return '';
         }
-        $operand = $node->operand->accept($this);
 
-        return "$functionName($operand)";
+        $inner = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand?->accept($this);
+        }
+        $params = implode(', ', $inner);
+
+        return "$functionName($params)";
     }
 
     /**
@@ -277,14 +284,14 @@ class ASCIIPrinter implements Visitor, LogicVisitor
     {
         $functionName = $node->operator;
         $operand      = $node->operand;
-        $op           = $operand->accept($this);
+        $op           = $operand[0]->accept($this);
 
         // Add parentheses most of the time.
-        if ($operand instanceof FloatNode || $operand instanceof IntegerNode || $operand instanceof RationalNode) {
-            if ($operand->value < 0) {
+        if ($operand[0] instanceof NumericNode) {
+            if ($operand[0]->value < 0) {
                 $op = "($op)";
             }
-        } elseif (!$operand instanceof VariableNode && !$operand instanceof ConstantNode) {
+        } elseif (!$operand[0] instanceof VariableNode && !$operand[0] instanceof ConstantNode) {
             $op = "($op)";
         }
 

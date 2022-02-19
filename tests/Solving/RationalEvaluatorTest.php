@@ -344,7 +344,7 @@ class RationalEvaluatorTest extends TestCase
      */
     public function testCannotEvalauateUnknownFunction(): void
     {
-        $f = new FunctionNode('sdf', new RationalNode(1, 1));
+        $f = new FunctionNode('sdf', [new RationalNode(1, 1)]);
 
         $this->expectException(UnknownFunctionException::class);
         $this->evaluate($f);

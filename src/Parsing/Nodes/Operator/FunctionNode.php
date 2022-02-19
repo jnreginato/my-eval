@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MyEval\Parsing\Nodes\Operator;
 
 use MyEval\Parsing\Nodes\Node;
-use MyEval\Parsing\Nodes\Operand\FloatNode;
 use MyEval\Parsing\Nodes\Operand\OperandNode;
 use MyEval\Parsing\Traits\Sanitize;
 use MyEval\Solving\Visitor;
@@ -18,23 +17,34 @@ class FunctionNode extends AbstractOperatorNode
     use Sanitize;
 
     /**
-     * AST of function operand.
-     */
-    public ?Node $operand;
-
-    /**
      * @param string $operator Function name, e.g. 'sin'.
-     * @param mixed  $operand  AST of function operand.
+     * @param array  $operand  array of ASTs of function operands.
      */
     public function __construct(
         public readonly string $operator,
-        mixed $operand = null
+        public array $operand = [],
+        public int $paramsNumber = 1
     ) {
-        if (is_numeric($operand)) {
-            $operand = new FloatNode((float)$operand);
-        }
+        $this->setParamsNumber();
+    }
 
-        $this->operand = $operand;
+    /**
+     * @return void
+     */
+    private function setParamsNumber(): void
+    {
+        match ($this->operator) {
+            default  => $this->paramsNumber = 1,
+            'ending' => $this->paramsNumber = 2,
+        };
+    }
+
+    /**
+     * @return int
+     */
+    public function getParamsNumber(): int
+    {
+        return $this->paramsNumber;
     }
 
     /**
@@ -69,7 +79,7 @@ class FunctionNode extends AbstractOperatorNode
             return false;
         }
 
-        return $this->operator === $other->operator && $this->operand->compareTo($other->operand);
+        return $this->operator === $other->operator && $this->operand[0]?->compareTo($other->operand[0]);
     }
 
     /**
@@ -81,6 +91,19 @@ class FunctionNode extends AbstractOperatorNode
      */
     public function setOperand(int|float|Node $operand): void
     {
-        $this->operand = $this->sanitize($operand);
+        unset($this->operand);
+        $this->operand[0] = $this->sanitize($operand);
+    }
+
+    /**
+     * Configure the node operand.
+     *
+     * @param int|float|OperandNode $operand
+     *
+     * @return void
+     */
+    public function addOperand(int|float|Node $operand): void
+    {
+        $this->operand[] = $this->sanitize($operand);
     }
 }

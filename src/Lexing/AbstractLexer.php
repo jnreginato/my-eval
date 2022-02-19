@@ -143,6 +143,7 @@ class AbstractLexer extends Lexer
 
         $this->add(new TokenDefinition('/pi/', TokenType::CONSTANT));
 
+        $this->add(new TokenDefinition('/\,/', TokenType::TERMINATOR));
         $this->add(new TokenDefinition('/\;/', TokenType::TERMINATOR));
         $this->add(new TokenDefinition('/\n/', TokenType::TERMINATOR));
 

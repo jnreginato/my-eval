@@ -185,8 +185,13 @@ class TreePrinter implements Visitor, LogicVisitor
     public function visitFunctionNode(FunctionNode $node): string
     {
         $functionName = $node->operator;
-        $operand      = $node->operand->accept($this);
 
-        return "$functionName($operand)";
+        $inner = [];
+        foreach ($node->operand as $operand) {
+            $inner[] = $operand?->accept($this);
+        }
+        $params = implode(', ', $inner);
+
+        return "$functionName($params)";
     }
 }

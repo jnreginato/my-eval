@@ -239,7 +239,7 @@ class DifferentiatorTest extends TestCase
     public function testEmitExceptionIfFunctionNullOperand(): void
     {
         $differantiator = new Differentiator('x');
-        $node           = new FunctionNode('sin', null);
+        $node           = new FunctionNode('sin');
         $this->expectException(NullOperandException::class);
         $differantiator->visitFunctionNode($node);
     }
@@ -387,7 +387,7 @@ class DifferentiatorTest extends TestCase
      */
     public function testCannotDifferentiateUnknownFunction(): void
     {
-        $node = new FunctionNode('erf', new VariableNode('x'));
+        $node = new FunctionNode('erf', [new VariableNode('x')]);
         $this->expectException(UnknownFunctionException::class);
 
         $this->diff($node);

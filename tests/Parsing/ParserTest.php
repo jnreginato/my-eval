@@ -436,7 +436,7 @@ class ParserTest extends TestCase
 
         $node = $this->parser->parse($tokens);
 
-        static::assertEquals(new FunctionNode('!', new IntegerNode(3)), $node);
+        static::assertEquals(new FunctionNode('!', [new IntegerNode(3)]), $node);
     }
 
     /**
@@ -543,11 +543,13 @@ class ParserTest extends TestCase
         static::assertEquals(
             new FunctionNode(
                 'sin',
-                new InfixExpressionNode(
-                    '/',
-                    new ConstantNode('pi'),
-                    new IntegerNode(3)
-                ),
+                [
+                    new InfixExpressionNode(
+                        '/',
+                        new ConstantNode('pi'),
+                        new IntegerNode(3)
+                    )
+                ],
             ),
             $node
         );
