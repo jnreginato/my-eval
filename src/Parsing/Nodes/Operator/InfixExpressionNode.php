@@ -8,6 +8,7 @@ use MyEval\Exceptions\NullOperandException;
 use MyEval\Exceptions\UnknownOperatorException;
 use MyEval\Parsing\Nodes\Node;
 use MyEval\Solving\LogicEvaluator;
+use MyEval\Solving\PricingEvaluator;
 use MyEval\Solving\Visitor;
 
 use function in_array;
@@ -119,7 +120,7 @@ class InfixExpressionNode extends AbstractExpressionNode
     public function accept(Visitor $visitor): mixed
     {
         if (
-            $visitor instanceof LogicEvaluator &&
+            ($visitor instanceof LogicEvaluator  || $visitor instanceof PricingEvaluator) &&
             in_array($this->operator, ['=', '<>', '>', '<', '>=', '<=', '&&', 'AND', '||', 'OR'])
         ) {
             return $visitor->visitLogicalExpressionNode($this);
