@@ -285,7 +285,7 @@ class PricingEvaluator implements Visitor
 
         $inner = [];
         foreach ($node->operand as $operand) {
-            $inner[] = $operand instanceof StringNode ? $operand->accept($this) : (float)$operand->accept($this);
+            $inner[] = $operand->accept($this);
         }
 
         if (!$inner) {
