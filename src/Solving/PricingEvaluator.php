@@ -318,10 +318,6 @@ class PricingEvaluator implements Visitor
                 $endingLenght = strlen($ending);
                 $lenght       = $pureLenght - $endingLenght;
 
-                if ($lenght <= 0) {
-                    throw new SyntaxErrorException();
-                }
-
                 return (float)(substr($pureString, 0, $lenght) . $ending);
 
             default:
