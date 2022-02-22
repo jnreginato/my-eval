@@ -110,6 +110,7 @@ class LogicEvaluator extends StdMathEvaluator implements LogicVisitor
      *
      * @return float
      * @throws NullOperandException
+     * @throws UnknownOperatorException
      */
     public function visitTernaryNode(TernaryExpressionNode $node): float
     {
@@ -133,27 +134,17 @@ class LogicEvaluator extends StdMathEvaluator implements LogicVisitor
             return $condition->value ? $leftOperand : $rightOperand;
         }
 
-        switch ($operator) {
-            default:
-            case '=':
-                $boolValue = $leftOperand == $rightOperand;
-                break;
-            case '>':
-                $boolValue = $leftOperand > $rightOperand;
-                break;
-            case '<':
-                $boolValue = $leftOperand < $rightOperand;
-                break;
-            case '<>':
-                $boolValue = $leftOperand != $rightOperand;
-                break;
-            case '>=':
-                $boolValue = $leftOperand >= $rightOperand;
-                break;
-            case '<=':
-                $boolValue = $leftOperand <= $rightOperand;
-                break;
-        }
+        $boolValue = match ($operator) {
+            '='         => $leftOperand == $rightOperand,
+            '<>'        => $leftOperand != $rightOperand,
+            '>'         => $leftOperand > $rightOperand,
+            '<'         => $leftOperand < $rightOperand,
+            '>='        => $leftOperand >= $rightOperand,
+            '<='        => $leftOperand <= $rightOperand,
+            '&&', 'AND' => $leftOperand && $rightOperand,
+            '||', 'OR'  => $leftOperand || $rightOperand,
+            default     => throw new UnknownOperatorException($operator),
+        };
 
         $leftValue  = (float)$node->getLeft()?->accept($this);
         $rightValue = (float)$node->getRight()?->accept($this);

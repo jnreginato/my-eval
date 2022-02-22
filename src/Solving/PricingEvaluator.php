@@ -12,7 +12,6 @@ use MyEval\Exceptions\UnknownConstantException;
 use MyEval\Exceptions\UnknownFunctionException;
 use MyEval\Exceptions\UnknownOperatorException;
 use MyEval\Exceptions\UnknownVariableException;
-use MyEval\Extensions\Math;
 use MyEval\Parsing\Nodes\Operand\BooleanNode;
 use MyEval\Parsing\Nodes\Operand\ConstantNode;
 use MyEval\Parsing\Nodes\Operand\FloatNode;
@@ -23,7 +22,6 @@ use MyEval\Parsing\Nodes\Operand\VariableNode;
 use MyEval\Parsing\Nodes\Operator\FunctionNode;
 use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
 use MyEval\Parsing\Nodes\Operator\TernaryExpressionNode;
-use UnexpectedValueException;
 
 use function array_key_exists;
 use function strlen;
@@ -339,6 +337,7 @@ class PricingEvaluator implements Visitor
      *
      * @return float
      * @throws NullOperandException
+     * @throws UnknownOperatorException
      */
     public function visitTernaryNode(TernaryExpressionNode $node): float
     {
@@ -362,27 +361,17 @@ class PricingEvaluator implements Visitor
             return $condition->value ? $leftOperand : $rightOperand;
         }
 
-        switch ($operator) {
-            default:
-            case '=':
-                $boolValue = $leftOperand == $rightOperand;
-                break;
-            case '>':
-                $boolValue = $leftOperand > $rightOperand;
-                break;
-            case '<':
-                $boolValue = $leftOperand < $rightOperand;
-                break;
-            case '<>':
-                $boolValue = $leftOperand != $rightOperand;
-                break;
-            case '>=':
-                $boolValue = $leftOperand >= $rightOperand;
-                break;
-            case '<=':
-                $boolValue = $leftOperand <= $rightOperand;
-                break;
-        }
+        $boolValue = match ($operator) {
+            '='         => $leftOperand == $rightOperand,
+            '<>'        => $leftOperand != $rightOperand,
+            '>'         => $leftOperand > $rightOperand,
+            '<'         => $leftOperand < $rightOperand,
+            '>='        => $leftOperand >= $rightOperand,
+            '<='        => $leftOperand <= $rightOperand,
+            '&&', 'AND' => $leftOperand && $rightOperand,
+            '||', 'OR'  => $leftOperand || $rightOperand,
+            default     => throw new UnknownOperatorException($operator),
+        };
 
         $leftValue  = (float)$node->getLeft()?->accept($this);
         $rightValue = (float)$node->getRight()?->accept($this);
