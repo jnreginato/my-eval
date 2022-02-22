@@ -24,6 +24,7 @@ use MyEval\Parsing\Nodes\Operator\InfixExpressionNode;
 use MyEval\Parsing\Nodes\Operator\TernaryExpressionNode;
 
 use function array_key_exists;
+use function is_float;
 use function strlen;
 
 /**
@@ -285,7 +286,7 @@ class PricingEvaluator implements Visitor
 
         $inner = [];
         foreach ($node->operand as $operand) {
-            $inner[] = (string)$operand->accept($this);
+            $inner[] = $operand->accept($this);
         }
 
         if (!$inner) {
@@ -304,7 +305,7 @@ class PricingEvaluator implements Visitor
                 return ceil((float)$inner[0]);
 
             case 'ending':
-                $ending = (string)$inner[0];
+                $ending = is_float($inner[0]) ? (number_format($inner[0], 2)) : (string)$inner[0];
                 $price  = (float)$inner[1];
 
                 if (!preg_match('/\d*(\.\d\d)/', $ending)) {

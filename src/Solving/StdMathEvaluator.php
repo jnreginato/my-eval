@@ -390,7 +390,7 @@ class StdMathEvaluator implements Visitor
                 return ceil($inner[0]);
 
             case 'ending':
-                $ending = (string)$inner[0];
+                $ending = is_float($inner[0]) ? (number_format($inner[0], 2)) : (string)$inner[0];
                 $price  = (float)$inner[1];
 
                 if (!preg_match('/\d*(\.\d\d)/', $ending)) {
