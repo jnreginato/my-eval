@@ -18,6 +18,9 @@ namespace MyEval\Lexing;
  *  `/THEN/` or `/then/` matching a ternary condition THEN operation
  *  `/ELSE/` or `/else/` matching a ternary condition ELSE operation
  *
+ *  `/\{/` matching opening brace
+ *  `/\}/` matching closing brace
+ *
  *  `/\=/` matching equal
  *  `/\<\>/` matching differente than
  *  `/\>\=/` matching greater or equal than
@@ -31,9 +34,17 @@ namespace MyEval\Lexing;
  *  `/TRUE/` or `/true/` matching TRUE
  *  `/FALSE/` or `/false/` matching FALSE
  *
- *  `/e/` matching constant e
+ *  `/\NAN/` matching for a not a number
+ *  `/\INF/` matching for infinite
  *
- *  `/[a-zA-Z]+/` matching variables of any number of letters
+ *  `/e/` matching constant e
+ *  `/pi/` matching constant pi
+ *
+ *  `/return/` matching return instruction
+ *  `/\;/` matching semicolon
+ *  `/\n/` matching newline
+ *
+ *  `/$[a-zA-Z]+/` matching variables of any number of letters starting with $
  */
 class LogicLexer extends AbstractLexer
 {
@@ -46,6 +57,9 @@ class LogicLexer extends AbstractLexer
         $this->add(new TokenDefinition('/THEN/', TokenType::THEN));
         $this->add(new TokenDefinition('/ELSE/', TokenType::ELSE));
         $this->add(new TokenDefinition('/else/', TokenType::ELSE));
+
+        $this->add(new TokenDefinition('/\{/', TokenType::OPEN_BRACE));
+        $this->add(new TokenDefinition('/\}/', TokenType::CLOSE_BRACE));
 
         // Prefix operators
         // $this->add(new TokenDefinition('/\!/', TokenType::NOT));
@@ -70,8 +84,16 @@ class LogicLexer extends AbstractLexer
         $this->add(new TokenDefinition('/FALSE/', TokenType::BOOLEAN));
         $this->add(new TokenDefinition('/false/', TokenType::BOOLEAN));
 
-        $this->add(new TokenDefinition('/e/', TokenType::CONSTANT));
+        $this->add(new TokenDefinition('/NAN/', TokenType::CONSTANT));
+        $this->add(new TokenDefinition('/INF/', TokenType::CONSTANT));
 
-        $this->add(new TokenDefinition('/[a-zA-Z]+/', TokenType::VARIABLE));
+        $this->add(new TokenDefinition('/e/', TokenType::CONSTANT));
+        $this->add(new TokenDefinition('/pi/', TokenType::CONSTANT));
+
+        $this->add(new TokenDefinition('/return/', TokenType::TERMINATOR));
+        $this->add(new TokenDefinition('/\;/', TokenType::TERMINATOR));
+        $this->add(new TokenDefinition('/\n/', TokenType::TERMINATOR));
+
+        $this->add(new TokenDefinition('/[$a-zA-Z_\x7f-\xff][$a-zA-Z0-9_\x7f-\xff]+/', TokenType::VARIABLE));
     }
 }

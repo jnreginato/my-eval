@@ -20,6 +20,7 @@ namespace MyEval\Lexing;
  *  `/round/` matching routing function
  *  `/ceil/` matching rounding up function
  *  `/floor/` matching rounding down function
+ *  `/ending/` matching ending function
  *
  *  `/sin/` matching sine
  *  `/cos/` matching cosine
@@ -55,8 +56,6 @@ namespace MyEval\Lexing;
  *
  *  `/\(/` matching opening parenthesis (both as delimiter and function evaluation)
  *  `/\)/` matching closing parenthesis (both as delimiter and function evaluation)
- *  `/\{/` matching opening brace
- *  `/\}/` matching closing brace
  *
  *  `/\+/` matching + for addition (or unary +)
  *  `/\-/` matching - for subtraction (or unary -)
@@ -64,16 +63,7 @@ namespace MyEval\Lexing;
  *  `/\//` matching / for division
  *  `/\^/` matching ^ for exponentiation
  *
- *  `/\!/\!/` matching !! for semi-factorial
- *  `/\!/` matching ! for factorial
- *
- *  `/\NAN/` matching for a not a number
- *  `/\INF/` matching for infinite
- *
- *  `/pi/` matching constant pi
- *
- *  `/\;/` matching semicolon
- *  `/\n/` matching newline
+ *  `/\,/` matching comma
  *
  *  `/\s+/` matching whitespace
  */
@@ -128,8 +118,6 @@ class AbstractLexer extends Lexer
 
         $this->add(new TokenDefinition('/\(/', TokenType::OPEN_PARENTHESIS));
         $this->add(new TokenDefinition('/\)/', TokenType::CLOSE_PARENTHESIS));
-        $this->add(new TokenDefinition('/\{/', TokenType::OPEN_BRACE));
-        $this->add(new TokenDefinition('/\}/', TokenType::CLOSE_BRACE));
 
         $this->add(new TokenDefinition('/\+/', TokenType::ADDITION_OPERATOR));
         $this->add(new TokenDefinition('/\-/', TokenType::SUBTRACTION_OPERATOR));
@@ -137,18 +125,7 @@ class AbstractLexer extends Lexer
         $this->add(new TokenDefinition('/\//', TokenType::DIVISION_OPERATOR));
         $this->add(new TokenDefinition('/\^/', TokenType::EXPONENTIAL_OPERATOR));
 
-        // Postfix operators
-        $this->add(new TokenDefinition('/\!\!/', TokenType::SEMI_FACTORIAL_OPERATOR));
-        $this->add(new TokenDefinition('/\!/', TokenType::FACTORIAL_OPERATOR));
-
-        $this->add(new TokenDefinition('/NAN/', TokenType::CONSTANT));
-        $this->add(new TokenDefinition('/INF/', TokenType::CONSTANT));
-
-        $this->add(new TokenDefinition('/pi/', TokenType::CONSTANT));
-
         $this->add(new TokenDefinition('/\,/', TokenType::TERMINATOR));
-        $this->add(new TokenDefinition('/\;/', TokenType::TERMINATOR));
-        $this->add(new TokenDefinition('/\n/', TokenType::TERMINATOR));
 
         $this->add(new TokenDefinition('/\s+/', TokenType::WHITESPACE));
     }
