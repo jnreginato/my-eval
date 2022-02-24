@@ -94,6 +94,6 @@ class LogicLexer extends AbstractLexer
         $this->add(new TokenDefinition('/\;/', TokenType::TERMINATOR));
         $this->add(new TokenDefinition('/\n/', TokenType::TERMINATOR));
 
-        $this->add(new TokenDefinition('/[$a-zA-Z_\x7f-\xff][$a-zA-Z0-9_\x7f-\xff]+/', TokenType::VARIABLE));
+        $this->add(new TokenDefinition('/\$[a-zA-Z0-9_\x7f-\xff]+/', TokenType::VARIABLE));
     }
 }
